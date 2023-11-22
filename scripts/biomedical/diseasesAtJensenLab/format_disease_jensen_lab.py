@@ -55,6 +55,7 @@ def check_for_illegal_charc(s):
 def check_for_dcid(row):
     check_for_illegal_charc(str(row['dcid']))
     check_for_illegal_charc(str(row['GeneDcid']))
+    check_for_illegal_charc(str(row['ICD10']))
     return row
 
 def format_disease_gene_cols(df):
@@ -65,7 +66,7 @@ def format_disease_gene_cols(df):
     df['DOID'] = 'dcid:bio/' + df['DOID'].str.replace(':', '_')
     df['DOID'] = df['DOID'].replace('dcid:bio/nan', np.nan)
     df['ICD10'] = df['ICD10'].str.replace(':', '/')
-    df['DiseaseDcid'] = df['DOID'].fillna(df['ICD10'])
+    df['DiseaseDcid'] = df['DOID'].fillna('dcid:'+df['ICD10'])
     df['dcid'] = 'bio/DGA_' + df['Identifier'] + '_' + df['Gene'] + '_text_mining'
     df['dcid'] = df['dcid'].str.replace(':', '_')
     return df
@@ -92,23 +93,23 @@ def format_genes(df):
 
 def format_df(df, num):
 	if num ==1:
-		df['associationSource'] = 'bio/AssociationSourceTextMining'
+		df['associationType'] = 'bio/AssociationTypeTextMining'
 		df.update('"' +
-				  df[['Name', 'url', 'associationSource']].astype(str) + '"')
+				  df[['Name', 'url', 'associationType']].astype(str) + '"')
 		df.replace("\"nan\"", np.nan, inplace=True)
 	elif num==2:
 		df['dcid'] = df['dcid'].str.replace('text_mining', 'manual_curation')
-		df['associationSource'] = 'bio/AssociationSourceManualCuration'
+		df['associationType'] = 'bio/AssociationTypeManualCuration'
 		df.update('"' +
-				  df[['Name', 'score-db', 'associationSource']].astype(str) + '"')
+				  df[['Name', 'score-db', 'associationType']].astype(str) + '"')
 		df.replace("\"nan\"", np.nan, inplace=True)
 	else:
 		df['dcid'] = df['dcid'].str.replace('text_mining', 'experiment')
-		df['associationSource'] = 'bio/AssociationSourceExperiment'
+		df['associationType'] = 'bio/AssociationTypeExperiment'
 		df['source-score'] = df['source-score'].str.split('=')
 		df['source-score'] = np.where(df['source-score'] == df['source-score'],df['source-score'].str[1],np.nan)
 		df.update('"' +
-				  df[['Name', 'score-db', 'associationSource']].astype(str) + '"')
+				  df[['Name', 'score-db', 'associationType']].astype(str) + '"')
 		df.replace("\"nan\"", np.nan, inplace=True)
 	return df
 
